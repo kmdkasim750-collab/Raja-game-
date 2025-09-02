@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anand Game Roll Color Prediction</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff7eb3, #ff758c);
+      color: #333;
+    }
+    .container {
+      max-width: 420px;
+      margin: auto;
+      padding: 10px;
+    }
+    header {
+      background: #e74c3c;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+    /* Wallet */
+    .wallet {
+      background: #e74c3c;
+      padding: 20px;
+      border-radius: 15px;
+      margin: 15px 0;
+      text-align: center;
+      color: white;
+    }
+    .wallet h2 { margin: 0; }
+    .digits { display: flex; justify-content: center; margin-top: 10px; }
+    .digit { font-size: 22px; font-weight: bold; margin: 0 3px; padding: 8px 12px; border-radius: 8px; color: white; }
+    .red-bg { background: #e74c3c; }
+    .white-bg { background: #fff; color: black; }
+    .btn { padding: 8px 15px; margin: 8px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .deposit { background: #28a745; color: white; }
+    .withdraw { background: #dc3545; color: white; }
+    /* Bet amount box */
+    .bet-amount { background: #fff; padding: 12px; border-radius: 12px; margin: 10px 0; text-align: center; }
+    .bet-amount h3 { margin-top: 0; }
+    .bet-options { display: flex; justify-content: space-around; margin-top: 10px; }
+    .bet-btn { padding: 10px 18px; background: #3498db; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+    .bet-btn.active { background: #2ecc71; transform: scale(1.1); }
+    /* Game Section */
+    .game { background: #fff; padding: 15px; border-radius: 12px; margin-top: 15px; }
+    .timer { font-size: 18px; font-weight: bold; text-align: center; }
+    .numbers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
+    .num { padding: 14px; border-radius: 50%; font-weight: bold; text-align: center; color: white; cursor: pointer; }
+    .red { background: #e74c3c; }
+    .green { background: #27ae60; }
+    .violet { background: #9b59b6; }
+    /* Extra betting options */
+    .extra-bets { display: flex; justify-content: space-around; margin-top: 15px; }
+    .extra-btn { flex: 1; margin: 5px; padding: 12px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-align: center; }
+    .big { background: #3498db; }
+    .small { background: #f39c12; }
+    .car { background: #8e44ad; }
+    /* History */
+    .history { margin-top: 20px; background: #fff; padding: 12px; border-radius: 10px; max-height: 200px; overflow-y: auto; }
+    .history h3 { margin-top: 0; }
+    .record { font-size: 14px; padding: 6px; border-bottom: 1px solid #ddd; }
+    /* Withdrawal Section */
+    .withdraw-section { background: #fff; padding: 15px; border-radius: 12px; margin-top: 15px; }
+    .withdraw-section input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; }
+    .withdraw-section button { width: 100%; padding: 12px; background: #dc3545; color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .success-msg { margin-top: 10px; color: green; font-weight: bold; display: none; text-align: center; }
+    /* Deposit Section */
+    .deposit-section { background: #fff; padding: 25px; border-radius: 15px; margin-top: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+    .deposit-section h3 { margin-top: 0; font-size: 24px; text-align: center; color: #28a745; }
+    .deposit-section input { width: 100%; padding: 18px; margin: 14px 0; border-radius: 12px; border: 1px solid #ccc; font-size: 18px; }
+    .deposit-section button { width: 100%; padding: 18px; background: #28a745; color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 20px; cursor: pointer; }
+    .deposit-section .success-msg { margin-top: 12px; color: green; font-weight: bold; display: none; text-align: center; font-size: 18px; }
+    /* Floating Profit/Loss Animation */
+    .floating-amount {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      font-weight: bold;
+      padding: 15px 25px;
+      border-radius: 12px;
+      z-index: 2000;
+      pointer-events: none;
+      opacity: 0;
+      text-align: center;
+      animation: floatEffect 1.5s forwards;
+      background: linear-gradient(90deg, #ff9933, #ffffff, #138808);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    @keyframes floatEffect {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -80%) scale(1.3); }
+      100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>Anand Game Roll Color Prediction</header>
+
+    <!-- Wallet -->
+    <div class="wallet">
+      <h2>Wallet Balance</h2>
+      <div class="digits">
+        <div class="digit red-bg">₹</div>
+        <div class="digit white-bg" id="balance">100</div>
+      </div>
+      <button class="btn deposit" onclick="toggleDeposit()">Deposit</button>
+      <button class="btn withdraw" onclick="toggleWithdraw()">Withdraw</button>
+    </div>
+
+    <!-- Deposit Section -->
+    <div class="deposit-section" id="depositSection" style="display:none;">
+      <h3>Deposit Funds</h3>
+      <input type="text" id="depositUpi" placeholder="Enter your UPI ID (example@upi)" />
+      <input type="number" id="depositAmt" placeholder="Enter amount (₹100 - ₹1,000)" min="100" max="1000" />
+      <button onclick="processDeposit()">Deposit Now</button>
+      <div class="success-msg" id="depositMsg">✅ Deposit Successful! Amount Added.</div>
+    </div>
+
+    <!-- Withdrawal Section -->
+    <div class="withdraw-section" id="withdrawSection" style="display:none;">
+      <h3>Withdraw Funds</h3>
+      <input type="text" id="upiId" placeholder="Enter your UPI ID (example@upi)" />
+      <input type="number" id="withdrawAmt" placeholder="Enter amount" />
+      <button onclick="processWithdrawal()">Send Withdrawal</button>
+      <div class="success-msg" id="withdrawMsg">✅ Withdrawal Successful! Amount Sent.</div>
+    </div>
+
+    <!-- Bet Amount Selector -->
+    <div class="bet-amount">
+      <h3>Select Bet Amount</h3>
+      <div class="bet-options">
+        <div class="bet-btn" data-amt="10">₹10</div>
+        <div class="bet-btn" data-amt="20">₹20</div>
+        <div class="bet-btn" data-amt="50">₹50</div>
+        <div class="bet-btn" data-amt="100">₹100</div>
+      </div>
+    </div>
+
+    <!-- Game -->
+    <div class="game">
+      <div class="timer">Time Remaining: <span id="countdown">30</span>s</div>
+      <div class="numbers">
+        <div class="num green" data-val="0">0</div>
+        <div class="num red" data-val="1">1</div>
+        <div class="num violet" data-val="2">2</div>
+        <div class="num green" data-val="3">3</div>
+        <div class="num red" data-val="4">4</div>
+        <div class="num violet" data-val="5">5</div>
+        <div class="num green" data-val="6">6</div>
+        <div class="num red" data-val="7">7</div>
+        <div class="num violet" data-val="8">8</div>
+        <div class="num green" data-val="9">9</div>
+      </div>
+      <!-- Extra bets -->
+      <div class="extra-bets">
+        <div class="extra-btn big" data-val="big">BIG</div>
+        <div class="extra-btn small" data-val="small">SMALL</div>
+        <div class="extra-btn car" data-val="car">CAR</div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history">
+      <h3>History</h3>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+<script>
+  let balance = 100;
+  let countdown = 30;
+  let round = 1;
+  let timerDisplay = document.getElementById("countdown");
+  let balanceDisplay = document.getElementById("balance");
+  let historyList = document.getElementById("historyList");
+  let chosenBet = null;
+  let betAmount = 10; // default bet
+
+  // Toggle Deposit / Withdraw Sections
+  function toggleDeposit() {
+    let dep = document.getElementById("depositSection");
+    dep.style.display = dep.style.display === "none" ? "block" : "none";
+    document.getElementById("withdrawSection").style.display = "none";
+  }
+  function toggleWithdraw() {
+    let wit = document.getElementById("withdrawSection");
+    wit.style.display = wit.style.display === "none" ? "block" : "none";
+    document.getElementById("depositSection").style.display = "none";
+  }
+
+  // Bet amount selection
+  document.querySelectorAll(".bet-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".bet-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      betAmount = parseInt(btn.dataset.amt);
+    });
+  });
+
+  // Timer
+  setInterval(() => {
+    if (countdown > 0) { countdown--; } 
+    else {
+      let result = Math.floor(Math.random() * 10);
+      let outcome = "No Bet";
+      let changeAmt = 0;
+
+      if (chosenBet !== null) {
+        if (chosenBet == result) {
+          changeAmt = betAmount * 2;
+          balance += changeAmt;
+          outcome = `Win ✅ +${changeAmt}`;
+        } else {
+          changeAmt = -betAmount;
+          balance += changeAmt;
+          outcome = `Loss ❌ -${betAmount}`;
+        }
+        showFloatingAmount(changeAmt);
+      }
+
+      let now = new Date().toLocaleTimeString();
+      let rec = document.createElement("div");
+      rec.className = "record";
+      rec.innerHTML = `Round #${round} | Time: ${now} | Result: ${result} | ${outcome}`;
+      historyList.prepend(rec);
+
+      balanceDisplay.innerText = balance;
+      countdown = 30;
+      round++;
+      chosenBet = null;
+    }
+    timerDisplay.innerText = countdown;
+  }, 1000);
+
+  // Bet selection
+  document.querySelectorAll(".num, .extra-btn").forEach(el => {
+    el.addEventListener("click", () => {
+      chosenBet = el.dataset.val;
+      alert("Bet Selected: " + chosenBet + " | Amount: ₹" + betAmount);
+    });
+  });
+
+  // Floating profit/loss animation
+  function showFloatingAmount(amount) {
+    let floatDiv = document.createElement("div");
+    floatDiv.className = "floating-amount";
+    floatDiv.innerText = (amount > 0 ? `+₹${amount}` : `-₹${Math.abs(amount)}`);
+    document.body.appendChild(floatDiv);
+    setTimeout(() => floatDiv.remove(), 1500);
+  }
+
+  // Deposit Function
+  function processDeposit() {
+    let upiId = document.getElementById("depositUpi").value;
+    let amt = parseInt(document.getElementById("depositAmt").value);
+    let msg = document.getElementById("depositMsg");
+
+    if (!upiId || !amt) { alert("Please enter UPI ID and amount."); return; }
+    if (amt < 100 || amt > 1000) { alert("Deposit must be between ₹100 and ₹1000."); return; }
+
+    balance += amt;
+    balanceDisplay.innerText = balance;
+    msg.style.display = "block";
+    showFloatingAmount(amt);
+
+    let now = new Date().toLocaleTimeString();
+    let rec = document.createElement("div");
+    rec.className = "record";
+    rec.innerHTML = `💰 Deposit | Time: ${now} | UPI: ${upiId} | Amount: ₹${amt} | ✅ Successful`;
+    historyList.prepend(rec);
+
+    document.getElementById("depositUpi").value = "";
+    document.getElementById("depositAmt").value = "";
+    setTimeout(() => { msg.style.display = "none"; }, 2000);
+  }
+
+  // Withdrawal Function
+  function processWithdrawal() {
+    let upiId = document.getElementById("upiId").value;
+    let amt = parseInt(document.getElementById("withdrawAmt").value);
+    let msg = document.getElementById("withdrawMsg");
+
+    if (!upiId || !amt) { alert("Please enter UPI ID and amount."); return; }
+    if (amt > balance) { alert("Insufficient Balance!"); return; }
+
+    balance -= amt;
+    balanceDisplay.innerText = balance;
+    msg.style.display = "block";
+    showFloatingAmount(-amt);
+
+    let now = new Date().toLocaleTimeString();
+    let rec = document.createElement("div");
+    rec.className = "record";
+    rec.innerHTML = `💸 Withdrawal | Time: ${now} | UPI: ${upiId} | Amount: ₹${amt} | ✅ Successful`;
+    historyList.prepend(rec);
+
+    document.getElementById("upiId").value = "";
+    document.getElementById("withdrawAmt").value = "";
+    setTimeout(() => { msg.style.display = "none"; }, 2000);
+  }
+</script>
+</body>
+</html>
